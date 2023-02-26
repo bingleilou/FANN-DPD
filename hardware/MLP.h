@@ -10,10 +10,10 @@
 #include "hls_math.h"
 #include "hls_stream.h"
 
-typedef ap_fixed<8,2,AP_RND, AP_SAT> test_t;
+typedef ap_fixed<16,2,AP_RND, AP_SAT> test_t;
 
 typedef float interface_t;
-typedef ap_fixed<8,2,AP_RND, AP_SAT> weight_t;
+typedef ap_fixed<16,2,AP_RND, AP_SAT> weight_t;
 typedef test_t bias_t;
 typedef test_t param_t;
 typedef ap_fixed<32,4> accum_t;
@@ -23,7 +23,7 @@ typedef float decimal_t;
 typedef ap_uint<16> const_t;
 typedef ap_uint<8> char_t;
 
-#define LR   -0.05
+#define LR  -0.05
 #define MOM  0.9    // momentum
 
 #define seed1 4042322160
