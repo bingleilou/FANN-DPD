@@ -44,13 +44,13 @@ def  remove_windows(data, window_size):
 # set parameters
 num_epochs = 1
 batch_size = 32
-log_every_n = 500
+log_every_n = 1
 # Model
 input_sizes_alone = 16
 output_sizes = 2
 hidden_size = 32
 model = Full_Connect_MLP(input_sizes_alone,  output_sizes,  hidden_size)
-
+    
 # print parameters
 print("model is: ",model)
 print("len(list(model.parameters()))", len(list(model.parameters())))
@@ -189,7 +189,7 @@ print("  ")
 
 # Loss & optimizer
 criterion = nn.MSELoss(size_average=True)
-optimizer = optim.SGD(model.parameters(), lr=0.05, momentum = 0.9)
+optimizer = optim.SGD(model.parameters(), lr=0.05, momentum = 0.0)
 
 print("  ")
 # Train
@@ -208,8 +208,8 @@ torch.manual_seed(seed)
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
 
-num_test = 102
-train_inout_seq2 = train_inout_seq[0:tr_len]
+num_test = 102*batch_size*log_every_n
+train_inout_seq2 = train_inout_seq[0:num_test]  #num_test  tr_len
 
 min_loss_temp = 10000
 n_count = 0
@@ -224,6 +224,7 @@ for i in range(len(arr)):
     arr_target[i%batch_size, int(i/batch_size)*all_sizes:int(i/batch_size)*all_sizes+all_sizes] = arr[i]
 print("  ")
 
+
 g_train = batch_generator(train_inout_seq2, 1, input_sizes_alone, output_sizes)
 train_in_batch = np.zeros((batch_size, input_sizes_alone))
 train_out_batch = np.zeros((batch_size, output_sizes))
@@ -232,7 +233,7 @@ train_out_batch_store = np.zeros((batch_size, output_sizes))
 
 train_in_batch_pool = []
 train_out_batch_pool = []
-size_pool = 30
+size_pool = 10
 for i in range(size_pool):
     train_in_batch_pool.append(np.zeros((batch_size, input_sizes_alone)))
     train_out_batch_pool.append(np.zeros((batch_size, output_sizes)))
@@ -264,6 +265,7 @@ for epoch in range(num_epochs):
             if index == 1:
                 train_in_batch_store = copy.copy(train_in_batch_pool[lfsr2])
                 train_out_batch_store = copy.copy(train_out_batch_pool[lfsr2])
+                #print('********* index = ', index, 'coun = ', 'lfsr1 = ', lfsr1, 'lfsr2 = ', lfsr2, 'train_out_batch_store = \n', train_out_batch_store)
             else:
                 train_in_batch_store = copy.copy(train_in_batch_store)
                 train_out_batch_store = copy.copy(train_out_batch_store)
@@ -332,12 +334,51 @@ if figure_1 == 1:
     length_min = len(epoch_loss_train)
     x_plot= range(length_min)
     plt.plot(x_plot, epoch_loss_train, color = 'dodgerblue')
-    plt.legend()
     plt.xlabel("Step",fontsize=fs_)
     plt.ylabel("Training Loss",fontsize=fs_)
     plt.tick_params(labelsize=fs_)
     plt.tight_layout()
+    loss_Df = pd.DataFrame(epoch_loss_train);
+    loss_path_csv = "./figure/pytorch-lr0.05-m0.0.csv"
+    loss_path_txt = "./figure/pytorch-lr0.05-m0.0.txt"
+    loss_Df.to_csv(loss_path_csv);
     plt.show()
+    
+    ##################################################################################
+    ## 1. Read original loss data file and generate the LIST: df_x
+    ## 2. Read raw loss data file and generate the LIST: df_data
+    ##################################################################################
+    re_data = re.compile('^(.*)\,(.*)')
+    df_data = []
+
+    with open(loss_path_csv ,"r" ,encoding="utf-8") as f_r_dpd:
+        data_split_as_lines = f_r_dpd .read().splitlines()
+
+    for i in range(len(data_split_as_lines)):
+        result = re_data.search(data_split_as_lines[i])
+        if result:
+            index = result.group(1)
+            value = result.group(2)
+            df_data.append([index, value])
+    df_data = np.array(df_data)
+
+    ##################################################################################
+    ## 1. Delete the first line
+    ## 2. Add several lines at the begaing of the data file
+    ##################################################################################
+    df_data = df_data.tolist()
+    df_data.pop(0)
+    df_data = np.array(df_data)
+    df_data = df_data.tolist()
+    df_data = np.array(df_data)
+
+    ##################################################################################
+    ## Write the loss data without line numbers to the "loss_path_txt"
+    ##################################################################################
+    with open(loss_path_txt, "w", encoding="utf-8") as f_w:
+        for i in range(len(data_split_as_lines)+window_size-1):
+            f_w.write(df_data[i,1])
+            f_w.write('\n')
     
 test = 1
 if test == 1:
@@ -363,6 +404,7 @@ if test == 1:
     print("actual_out.shape = ",      actual_out.shape)
     print("predicted_out.shape = ", predicted_out.shape)
 
+    
     print(" ")
     print("############## mat - remove_windows_ngspice ###########")
     actual_out_mat      = remove_windows(actual_out,      int(output_sizes/2))
@@ -374,19 +416,6 @@ if test == 1:
     NMSE_Test_Set = ((np.linalg.norm(actual_out_mat - predicted_out_mat))**2)/((np.linalg.norm(actual_out_mat))**2)
     NMSE_Test_Set_dB = 10*np.log10(NMSE_Test_Set);
     print('NMSE(Test Set): %f, NMSE dB(Test Set) %f' % (NMSE_Test_Set, NMSE_Test_Set_dB))
-    figure_2 = 1
-    if figure_2 == 1:
-        plt.figure(2)
-        length_min = min(len(actual_out_mat), len(predicted_out))
-        x_plot= range(length_min)
-        plt.scatter(x_plot, (actual_out_mat).real, color='red', marker='o', alpha=0.5, s=20, label="PA_measured")
-        plt.scatter(x_plot, (predicted_out_mat).real, color='black', marker='x', alpha=0.5, s=12, label="PA_pred")
-        plt.legend()
-        plt.margins(x=0,y=0)
-        plt.xlim(1600,1600+400)
-        plt.xlabel("Time")
-        plt.ylabel("Volt")
-        plt.tight_layout()
         
 
 

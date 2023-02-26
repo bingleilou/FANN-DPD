@@ -108,7 +108,7 @@ int main(int argc, char **argv)
         }
     }
     loss_save_count = 0;
-    //rval_loss = write_file_1D<float, (int)PLOT_NUM>("D:/DPD/mlp/data/loss_save", loss_save);
+    rval_loss = write_file_1D<float, (int)PLOT_NUM>("data/loss_save", loss_save);
 
     return 0;
 }
