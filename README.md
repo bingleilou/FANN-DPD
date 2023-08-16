@@ -30,6 +30,7 @@ python3 train_and_test_mlp_SGD_pbacth_hls.py
 --------------------------------------------------------------------------------
 Results
 --------------------------------------------------------------------------------
+Training loss in different momentum set (0-left, 0.9-right)
 <p align="center">
   <img alt="Light" src="https://github.com/bingleilou/FANN-DPD/blob/main/software/figure/multi_b_m0.png" width="45%">
 &nbsp; &nbsp; &nbsp; &nbsp;
