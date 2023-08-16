@@ -7,7 +7,7 @@ Introduction
 --------------------------------------------------------------------------------
 * This is the first DPD scheme for power amplifier linearization based on a run-time trainable DNN. 
 
-* A novel hardware-efficient batch shuffle scheme for online training of streaming data that achieves similar accuracy to standard offline mini-batch stochastic gradient descent (SGD)~\cite{Sun_2019_sgdsurvey}.
+* A novel hardware-efficient batch shuffle scheme for online training of streaming data that achieves similar accuracy to standard offline mini-batch stochastic gradient descent (SGD).
 
 * An FPGA implementation supports 340 MHz streaming signal processing for DNN-DPD, with a latency of 496 cycles for DNN online training and inference.
 
